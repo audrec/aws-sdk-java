@@ -18,10 +18,12 @@ import com.amazonaws.annotation.NotThreadSafe;
 import com.amazonaws.annotation.SdkTestInternalApi;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.client.builder.ExecutorFactory;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.internal.SdkFunction;
 import com.amazonaws.regions.DefaultAwsRegionProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.transfer.internal.S3ProgressListener;
 import com.amazonaws.services.s3.transfer.internal.TransferManagerUtils;
 
 import java.util.concurrent.ExecutorService;
@@ -62,6 +64,10 @@ public final class TransferManagerBuilder {
     private Boolean disableParallelDownloads;
 
     private Boolean alwaysCalculateMultipartMd5;
+
+    private ProgressListener putObjectProgressListener;
+
+    private S3ProgressListener uploadProgressListener;
 
     /**
      * @return Create new instance of builder with all defaults set.
@@ -121,6 +127,32 @@ public final class TransferManagerBuilder {
 
     private AmazonS3 resolveS3Client() {
         return s3Client == null ? AmazonS3ClientBuilder.defaultClient() : s3Client;
+    }
+
+    public final void setPutObjectProgressListener(ProgressListener progressListener) {
+        this.putObjectProgressListener = progressListener;
+    }
+
+    public final TransferManagerBuilder withPutObjectProgressListener(ProgressListener progressListener) {
+        setPutObjectProgressListener(progressListener);
+        return this;
+    }
+
+    private ProgressListener getPutObjectProgressListener() {
+        return putObjectProgressListener == null? ProgressListener.NOOP : putObjectProgressListener;
+    }
+
+    private S3ProgressListener getUploadProgressListener() {
+        return uploadProgressListener;
+    }
+
+    public final void setUploadProgressListener(S3ProgressListener progressListener) {
+        this.uploadProgressListener = progressListener;
+    }
+
+    public final TransferManagerBuilder withUploadProgressListener(S3ProgressListener progressListener) {
+        setUploadProgressListener(progressListener);
+        return this;
     }
 
     /**
@@ -477,7 +509,9 @@ public final class TransferManagerBuilder {
         return new TransferManagerParams().withS3Client(resolveS3Client())
                 .withExecutorService(resolveExecutorService())
                 .withShutDownThreadPools(resolveShutDownThreadPools())
-                .withTransferManagerConfiguration(resolveConfiguration());
+                .withTransferManagerConfiguration(resolveConfiguration())
+                .withPutObjectProgressListener(getPutObjectProgressListener())
+                .withUploadProgressListener(getUploadProgressListener());
     }
 
     /**

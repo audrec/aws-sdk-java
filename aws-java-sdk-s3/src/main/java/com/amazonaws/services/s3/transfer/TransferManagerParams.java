@@ -15,7 +15,9 @@
 package com.amazonaws.services.s3.transfer;
 
 import com.amazonaws.annotation.SdkInternalApi;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.transfer.internal.S3ProgressListener;
 
 import java.util.concurrent.ExecutorService;
 
@@ -30,6 +32,8 @@ class TransferManagerParams {
     private ExecutorService executorService;
     private Boolean shutDownThreadPools;
     private TransferManagerConfiguration configuration;
+    private ProgressListener putObjectProgressListener;
+    private S3ProgressListener uploadProgressListener;
 
     public AmazonS3 getS3Client() {
         return s3Client;
@@ -55,6 +59,24 @@ class TransferManagerParams {
 
     public TransferManagerParams withShutDownThreadPools(Boolean shutDownThreadPools) {
         this.shutDownThreadPools = shutDownThreadPools;
+        return this;
+    }
+
+    public ProgressListener getPutObjectProgressListener() {
+        return putObjectProgressListener;
+    }
+
+    public TransferManagerParams withPutObjectProgressListener(ProgressListener progressListener) {
+        this.putObjectProgressListener = progressListener;
+        return this;
+    }
+
+    public S3ProgressListener getUploadProgressListener() {
+        return uploadProgressListener;
+    }
+
+    public TransferManagerParams withUploadProgressListener(S3ProgressListener progressListener) {
+        this.uploadProgressListener = progressListener;
         return this;
     }
 

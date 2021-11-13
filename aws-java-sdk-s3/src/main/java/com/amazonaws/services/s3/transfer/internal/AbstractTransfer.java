@@ -197,6 +197,10 @@ public abstract class AbstractTransfer implements Transfer {
         listenerChain.removeProgressListener(listener);
     }
 
+    public synchronized ProgressListenerChain getProgressListenerChain() {
+        return listenerChain;
+    }
+
     /**
      * @deprecated Replaced by {@link #addProgressListener(ProgressListener)}
      */

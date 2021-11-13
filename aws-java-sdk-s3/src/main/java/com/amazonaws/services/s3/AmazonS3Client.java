@@ -3651,7 +3651,6 @@ public class AmazonS3Client extends AmazonWebServiceClient implements AmazonS3 {
         initiateMultipartUploadRequest = beforeClientExecution(initiateMultipartUploadRequest);
         rejectNull(initiateMultipartUploadRequest,
             "The request parameter must be specified when initiating a multipart upload");
-
         rejectNull(initiateMultipartUploadRequest.getBucketName(),
             "The bucket name parameter must be specified when initiating a multipart upload");
         rejectNull(initiateMultipartUploadRequest.getKey(),

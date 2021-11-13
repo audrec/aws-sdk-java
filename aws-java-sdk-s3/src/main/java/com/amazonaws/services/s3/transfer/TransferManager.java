@@ -179,6 +179,9 @@ public class TransferManager {
      */
     private final boolean isImmutable;
 
+    private final ProgressListener putObjectRequestProgressListener;
+    private final S3ProgressListener uploadProgressListener;
+
     /**
      * Constructs a new <code>TransferManager</code> and Amazon S3 client using
      * the credentials from <code>DefaultAWSCredentialsProviderChain</code>
@@ -326,6 +329,8 @@ public class TransferManager {
         this.configuration = new TransferManagerConfiguration();
         this.shutDownThreadPools = shutDownThreadPools;
         this.isImmutable = false;
+        this.putObjectRequestProgressListener = null;
+        this.uploadProgressListener = null;
     }
 
     @SdkInternalApi
@@ -335,6 +340,8 @@ public class TransferManager {
         this.configuration = params.getConfiguration();
         this.shutDownThreadPools = params.getShutDownThreadPools();
         this.isImmutable = true;
+        this.putObjectRequestProgressListener = params.getPutObjectProgressListener();
+        this.uploadProgressListener = params.getUploadProgressListener();
     }
 
 
@@ -385,6 +392,13 @@ public class TransferManager {
         return s3;
     }
 
+    public ProgressListener getPutObjectRequestProgressListener() {
+        return putObjectRequestProgressListener;
+    }
+
+    public S3ProgressListener getUploadProgressListener() {
+        return uploadProgressListener;
+    }
     /**
      * <p>
      * Schedules a new transfer to upload data to Amazon S3. This method is
@@ -1852,6 +1866,7 @@ public class TransferManager {
 
         /* This is the hook for adding additional progress listeners */
         ProgressListenerChain additionalListeners = new ProgressListenerChain();
+        additionalListeners.addProgressListener(putObjectRequestProgressListener);
         TransferProgress progress = new TransferProgress();
         /*
          * Bind additional progress listeners to this
@@ -1925,7 +1940,7 @@ public class TransferManager {
                                     .withTagging(objectTagging)
                                     .withCannedAcl(cannedAcl)
                                     .<PutObjectRequest> withGeneralProgressListener(
-                                            listener), transferListener, null, null));
+                                            listener), transferListener, uploadProgressListener, null));
                 }
             }
             progress.setTotalBytesToTransfer(totalSize);
