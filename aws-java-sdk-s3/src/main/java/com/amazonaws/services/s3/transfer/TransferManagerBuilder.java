@@ -129,27 +129,59 @@ public final class TransferManagerBuilder {
         return s3Client == null ? AmazonS3ClientBuilder.defaultClient() : s3Client;
     }
 
+    /**
+     * Set the progress listener attached to the put object request.
+     *
+     * @param progressListener The progress listener to use
+     */
     public final void setPutObjectProgressListener(ProgressListener progressListener) {
         this.putObjectProgressListener = progressListener;
     }
 
+    /**
+     * Sets the progress listener attached to the put object request in the TransferManagerBuilder.
+     *
+     * @param progressListener The progress listener to use
+     * @return This object for method chaining.
+     */
     public final TransferManagerBuilder withPutObjectProgressListener(ProgressListener progressListener) {
         setPutObjectProgressListener(progressListener);
         return this;
     }
 
+    /**
+     * Returns the progress listener attached to the put object request.
+     *
+     * @return The progress listener.
+     */
     private ProgressListener getPutObjectProgressListener() {
         return putObjectProgressListener == null? ProgressListener.NOOP : putObjectProgressListener;
     }
 
+    /**
+     * Returns the progress listener attached to the Upload process.
+     *
+     * @return The progress listener.
+     */
     private S3ProgressListener getUploadProgressListener() {
         return uploadProgressListener;
     }
 
+    /**
+     * Set the progress listener attached to the upload process.
+     *
+     * @param progressListener The progress listener to use
+     */
     public final void setUploadProgressListener(S3ProgressListener progressListener) {
         this.uploadProgressListener = progressListener;
     }
 
+    /**
+     * Sets the progress listener attached to the upload process in the TransferManagerBuilder.
+     *
+     * @param progressListener The progress listener to use
+     * @return This object for method chaining.
+     */
     public final TransferManagerBuilder withUploadProgressListener(S3ProgressListener progressListener) {
         setUploadProgressListener(progressListener);
         return this;

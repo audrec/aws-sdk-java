@@ -62,19 +62,42 @@ class TransferManagerParams {
         return this;
     }
 
+    /**
+     * Returns the progress listener attached to the put object request.
+     *
+     * @return The progress listener.
+     */
     public ProgressListener getPutObjectProgressListener() {
         return putObjectProgressListener;
     }
 
+
+    /**
+     * Sets the progress listener attached to the put object request in the TransferManagerParams.
+     *
+     * @param progressListener The progress listener to use
+     * @return This object for method chaining.
+     */
     public TransferManagerParams withPutObjectProgressListener(ProgressListener progressListener) {
         this.putObjectProgressListener = progressListener;
         return this;
     }
 
+    /**
+     * Returns the progress listener attached to the Upload process.
+     *
+     * @return The progress listener.
+     */
     public S3ProgressListener getUploadProgressListener() {
         return uploadProgressListener;
     }
 
+    /**
+     * Sets the progress listener attached to the upload process in the TransferManagerParams.
+     *
+     * @param progressListener The progress listener to use
+     * @return This object for method chaining.
+     */
     public TransferManagerParams withUploadProgressListener(S3ProgressListener progressListener) {
         this.uploadProgressListener = progressListener;
         return this;

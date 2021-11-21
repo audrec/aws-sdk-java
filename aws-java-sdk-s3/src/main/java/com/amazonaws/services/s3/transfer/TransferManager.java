@@ -392,10 +392,20 @@ public class TransferManager {
         return s3;
     }
 
+    /**
+     * Returns the progress listener attached to the put object request.
+     *
+     * @return The progress listener.
+     */
     public ProgressListener getPutObjectRequestProgressListener() {
         return putObjectRequestProgressListener;
     }
 
+    /**
+     * Returns the progress listener attached to the Upload process.
+     *
+     * @return The progress listener.
+     */
     public S3ProgressListener getUploadProgressListener() {
         return uploadProgressListener;
     }
