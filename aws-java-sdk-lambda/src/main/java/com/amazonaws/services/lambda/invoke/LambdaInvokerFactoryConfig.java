@@ -16,6 +16,7 @@
 package com.amazonaws.services.lambda.invoke;
 
 import com.amazonaws.annotation.SdkProtectedApi;
+import com.amazonaws.services.lambda.model.CustomLambdaSerde;
 import com.amazonaws.util.ValidationUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +31,7 @@ public class LambdaInvokerFactoryConfig {
 
     private LambdaFunctionNameResolver lambdaFunctionNameResolver;
     private final ObjectMapper objectMapper;
+    private final CustomLambdaSerde serde;
     private final String functionAlias;
     private final String functionVersion;
 
@@ -38,16 +40,18 @@ public class LambdaInvokerFactoryConfig {
      */
     @Deprecated
     public LambdaInvokerFactoryConfig() {
-        this(new DefaultLambdaFunctionNameResolver(), LambdaInvokerFactory.DEFAULT_MAPPER, null, null);
+        this(new DefaultLambdaFunctionNameResolver(), LambdaInvokerFactory.DEFAULT_MAPPER, null, null, null);
     }
 
     @SdkProtectedApi
     LambdaInvokerFactoryConfig(LambdaFunctionNameResolver lambdaFunctionNameResolver,
                                ObjectMapper objectMapper,
+                               CustomLambdaSerde serde,
                                String functionAlias,
                                String functionVersion) {
         this.lambdaFunctionNameResolver = lambdaFunctionNameResolver;
         this.objectMapper = objectMapper;
+        this.serde = serde;
         this.functionAlias = functionAlias;
         this.functionVersion = functionVersion;
     }
@@ -58,6 +62,13 @@ public class LambdaInvokerFactoryConfig {
 
     public ObjectMapper getObjectMapper() {
         return objectMapper;
+    }
+
+    /**
+     * Sets the customized lambda serde.
+     */
+    public CustomLambdaSerde getCustomLambdaSerde() {
+        return serde;
     }
 
     public String getFunctionAlias() {

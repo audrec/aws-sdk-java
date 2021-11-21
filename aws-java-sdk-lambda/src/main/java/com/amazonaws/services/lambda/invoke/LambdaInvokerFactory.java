@@ -16,10 +16,7 @@ package com.amazonaws.services.lambda.invoke;
 
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaAsyncClientBuilder;
-import com.amazonaws.services.lambda.model.InvocationType;
-import com.amazonaws.services.lambda.model.InvokeRequest;
-import com.amazonaws.services.lambda.model.InvokeResult;
-import com.amazonaws.services.lambda.model.LogType;
+import com.amazonaws.services.lambda.model.*;
 import com.amazonaws.util.Base64;
 import com.amazonaws.util.BinaryUtils;
 import com.amazonaws.util.StringUtils;
@@ -118,6 +115,7 @@ public final class LambdaInvokerFactory {
         private String functionVersion;
         private AWSLambda lambda;
         private ObjectMapper objectMapper;
+        private CustomLambdaSerde serde;
 
         /**
          * Sets a new Function name resolver to override the default behavior.
@@ -154,8 +152,23 @@ public final class LambdaInvokerFactory {
             return this;
         }
 
+        /**
+         * Sets the Serde used to (de-)serialize payload if you do not wish to use the object mapper.
+         * (see {@link CustomLambdaSerde} for configuration options)
+         * *
+         * @return This current object for method chaining.
+         */
+        public Builder customSerde(CustomLambdaSerde serde) {
+            this.serde = serde;
+            return this;
+        }
+
         private ObjectMapper resolveObjectMapper() {
             return null != this.objectMapper ? this.objectMapper : DEFAULT_MAPPER;
+        }
+
+        private CustomLambdaSerde resolveSerde() {
+            return this.serde;
         }
 
         /**
@@ -208,7 +221,7 @@ public final class LambdaInvokerFactory {
         }
 
         private LambdaInvokerFactoryConfig getConfiguration() {
-            return new LambdaInvokerFactoryConfig(resolveFunctionNameResolver(), resolveObjectMapper(),
+            return new LambdaInvokerFactoryConfig(resolveFunctionNameResolver(), resolveObjectMapper(), resolveSerde(),
                                                   functionAlias, functionVersion);
         }
     }
@@ -222,12 +235,14 @@ public final class LambdaInvokerFactory {
         private final Log log;
         private final LambdaInvokerFactoryConfig config;
         private final ObjectMapper mapper;
+        private final CustomLambdaSerde serde;
 
         public LambdaInvocationHandler(Class<?> interfaceClass, AWSLambda awsLambda, LambdaInvokerFactoryConfig config) {
             this.awsLambda = awsLambda;
             this.log = LogFactory.getLog(interfaceClass);
             this.config = config;
             this.mapper = config.getObjectMapper();
+            this.serde = config.getCustomLambdaSerde();
         }
 
         @Override
@@ -286,7 +301,7 @@ public final class LambdaInvokerFactory {
             if (input != null) {
                 try {
 
-                    String payload = mapper.writer().writeValueAsString(input);
+                    String payload = serializePayload(input);
                     if (log.isDebugEnabled()) {
                         log.debug("Serialized request object to '" + payload + "'");
                     }
@@ -298,6 +313,13 @@ public final class LambdaInvokerFactory {
             }
 
             return invokeRequest;
+        }
+
+        private String serializePayload(Object input) throws JsonProcessingException {
+            if (serde != null) {
+                return  serde.writeValueAsString(input);
+            }
+            return mapper.writer().writeValueAsString(input);
         }
 
         private boolean hasQualifier() {
