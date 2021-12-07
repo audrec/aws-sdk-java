@@ -29,10 +29,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.QueueAttributeName;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Set of utility methods for working with Amazon SNS topics.
@@ -189,17 +186,18 @@ public class Topics {
         String policyJson = sqsAttrs.get(QueueAttributeName.Policy.toString());
         Policy policy = extendPolicy && policyJson != null && policyJson.length() > 0
                         ? Policy.fromJson(policyJson) : new Policy();
-        policy.getStatements().add(new Statement(Effect.Allow)
+        Statement newStatement = new Statement(Effect.Allow)
                 .withId("topic-subscription-" + snsTopicArn)
                 .withPrincipals(Principal.AllUsers)
                 .withActions(SQSActions.SendMessage)
                 .withResources(new Resource(sqsQueueArn))
-                .withConditions(ConditionFactory.newSourceArnCondition(snsTopicArn)));
-
+                .withConditions(ConditionFactory.newSourceArnCondition(snsTopicArn));
+        if (!policy.getStatements().contains(newStatement)){
+            policy.getStatements().add(newStatement);
+        }
         Map<String, String> newAttrs = new HashMap<String, String>();
         newAttrs.put(QueueAttributeName.Policy.toString(), policy.toJson());
         sqs.setQueueAttributes(new SetQueueAttributesRequest(sqsQueueUrl, newAttrs));
-
         SubscribeResult subscribeResult = sns.subscribe(snsTopicArn, "sqs", sqsQueueArn);
         return subscribeResult.getSubscriptionArn();
     }
