@@ -16,7 +16,10 @@ package com.amazonaws.auth.policy;
 
 import com.amazonaws.util.PolicyUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * A statement is the formal description of a single permission, and is always
@@ -410,25 +413,6 @@ public class Statement {
     public Statement withPrincipals(Principal... principals) {
         setPrincipals(principals);
         return this;
-    }
-
-    /**
-     * Compare two statements.
-     *
-     * @param obj the statement to compare with
-     *
-     * @return true if two statmenets are the same
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) { return false; }
-        if (obj == this) { return true; }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        Statement s1 = (Statement) obj;
-        Statement s2 = (Statement) this;
-        return Objects.equals(s1.getId(), s2.getId());
     }
 
 }
