@@ -415,4 +415,23 @@ public class Statement {
         return this;
     }
 
+    /**
+     * Compare two statements.
+     *
+     * @param obj the statement to compare with
+     *
+     * @return true if two statmenets are the same
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) { return false; }
+        if (obj == this) { return true; }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Statement s1 = (Statement) obj;
+        Statement s2 = (Statement) this;
+        return Objects.equals(s1.getId(), s2.getId());
+    }
+
 }
