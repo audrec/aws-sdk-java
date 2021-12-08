@@ -2429,6 +2429,7 @@ public class TransferManager {
      *             If any errors occurred in Amazon S3 while processing the
      *             request.
      */
+    // CS427 Issue link: https://github.com/aws/aws-sdk-java/issues/2555
     public Download resumeDownload(PersistableDownload persistableDownload) {
         assertParameterNotNull(persistableDownload,
                 "PausedDownload is mandatory to resume a download.");
