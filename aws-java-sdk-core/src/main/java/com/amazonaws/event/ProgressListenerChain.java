@@ -82,7 +82,7 @@ public class ProgressListenerChain implements ProgressListener, DeliveryMode {
     /**
      * Returns the listeners associated with this listener chain.
      */
-    protected List<ProgressListener> getListeners() {
+    public List<ProgressListener> getListeners() {
         return listeners;
     }
 

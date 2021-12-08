@@ -72,14 +72,14 @@ public final class PersistableUpload extends PersistableTransfer {
     /**
      * Returns the name of the bucket.
      */
-    String getBucketName() {
+    public String getBucketName() {
         return bucketName;
     }
 
     /**
      * Returns the name of the object.
      */
-    String getKey() {
+    public String getKey() {
         return key;
     }
 
@@ -109,7 +109,7 @@ public final class PersistableUpload extends PersistableTransfer {
      * Returns the file name along with path which needs to be uploaded to
      * Amazon S3.
      */
-    String getFile() {
+    public String getFile() {
         return file;
     }
 

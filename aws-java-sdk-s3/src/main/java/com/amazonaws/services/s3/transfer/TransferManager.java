@@ -652,7 +652,7 @@ public class TransferManager {
      *             If any errors occurred in Amazon S3 while processing the
      *             request.
      */
-    private Upload doUpload(final PutObjectRequest putObjectRequest,
+    public Upload doUpload(final PutObjectRequest putObjectRequest,
             final TransferStateChangeListener stateListener,
             final S3ProgressListener progressListener,
             final PersistableUpload persistableUpload) throws AmazonServiceException,
@@ -665,8 +665,9 @@ public class TransferManager {
         String multipartUploadId = persistableUpload != null ? persistableUpload
                 .getMultipartUploadId() : null;
 
-        if (putObjectRequest.getMetadata() == null)
+        if (putObjectRequest.getMetadata() == null) {
             putObjectRequest.setMetadata(new ObjectMetadata());
+        }
         ObjectMetadata metadata = putObjectRequest.getMetadata();
 
         File file = TransferManagerUtils.getRequestFile(putObjectRequest);
@@ -1407,8 +1408,9 @@ public class TransferManager {
                                                   boolean resumeOnRetry, KeyFilter filter) {
         assertNotObjectLambdaArn(bucketName, "downloadDirectory");
 
-        if ( keyPrefix == null )
+        if ( keyPrefix == null ) {
             keyPrefix = "";
+        }
         if ( filter == null ) {
             filter = KeyFilter.INCLUDE_ALL;
         }
@@ -1903,8 +1905,9 @@ public class TransferManager {
              * the starting position by one.
              */
             int startingPosition = directory.getAbsolutePath().length();
-            if (!(directory.getAbsolutePath().endsWith(File.separator)))
+            if (!(directory.getAbsolutePath().endsWith(File.separator))) {
                 startingPosition++;
+            }
 
             long totalSize = 0;
             for (File f : files) {
@@ -2368,6 +2371,47 @@ public class TransferManager {
     }
 
     /**
+     * Resumes an upload operation and attach new upload to the log. This upload operation uses the same
+     * configuration {@link TransferManagerConfiguration} as the original upload.
+     * Any data already uploaded will be skipped, and only the remaining will be uploaded to Amazon S3.
+     *
+     * @param persistableUpload the upload to resume.
+     * @param progressListener the progress listener to log all uploads to receive
+     *                         asynchronous notifications about your transfer's progress.
+     * @return A new <code>Upload</code> object to use to check the state of the
+     *         upload, listen for progress notifications, and otherwise manage
+     *         the upload.
+     *
+     * @throws AmazonClientException
+     *             If any errors are encountered in the client while making the
+     *             request or handling the response.
+     * @throws AmazonServiceException
+     *             If any errors occurred in Amazon S3 while processing the
+     *             request.
+     */
+    public Upload resumeUpload(PersistableUpload persistableUpload, ProgressListener progressListener) {
+        // Throw exception if the upload object is null.
+        assertParameterNotNull(persistableUpload,
+                "PauseUpload is mandatory to resume a upload.");
+        // Make sure this upload support S3 Object Lambda resources.
+        assertNotObjectLambdaArn(persistableUpload.getBucketName(), "resumeUpload");
+        // Throw exception if the bucket name of the object being uploaded is empty.
+        if (persistableUpload.getBucketName() == null) {
+            throw new IllegalArgumentException(
+                    "Unable to resume the upload. No bucket name specified.");
+        }
+
+        configuration.setMinimumUploadPartSize(persistableUpload.getPartSize());
+        configuration.setMultipartUploadThreshold(persistableUpload.getMutlipartUploadThreshold());
+        PutObjectRequest resumePutObjectRequest = new PutObjectRequest(persistableUpload.getBucketName(),
+                persistableUpload.getKey(), new File(persistableUpload.getFile()));
+        resumePutObjectRequest.setGeneralProgressListener(progressListener);
+
+        // Pass the current progress listener to upload function to update progress as the file is uploading
+        return doUpload(resumePutObjectRequest, null, null, persistableUpload);
+    }
+
+    /**
      * Resumes an download operation. This download operation uses the same
      * configuration as the original download. Any data already fetched will be
      * skipped, and only the remaining data is retrieved from Amazon S3.
@@ -2419,7 +2463,9 @@ public class TransferManager {
      *            if the specified parameter is null.
      */
     private void assertParameterNotNull(Object parameterValue, String errorMessage) {
-        if (parameterValue == null) throw new IllegalArgumentException(errorMessage);
+        if (parameterValue == null) {
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     /**

@@ -1,14 +1,12 @@
 package s3;
 
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.transfer.MultipleFileUpload;
-import com.amazonaws.services.s3.transfer.ObjectMetadataProvider;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.*;
 import com.amazonaws.services.s3.transfer.internal.MultipleFileUploadImpl;
+import com.amazonaws.services.s3.transfer.internal.UploadImpl;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -18,6 +16,56 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class TransferManagerTest {
+
+    /**
+     * Unit test to check if the null input for the resume upload API will correctly throw an exception.
+     */
+    @Test
+    public void testNullInputResumeUpload() {
+        // Mock a client that call service from aws s3
+        AmazonS3Client s3Client = Mockito.mock(AmazonS3Client.class);
+        // Mock a file
+        File myFile = Mockito.mock(File.class);
+        // Mock a progress listener that we set as an input to the new API
+        PersistableUpload persistableUpload = null;
+        ProgressListener progressListenerForTest = Mockito.mock(ProgressListener.class);
+        TransferManager transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
+
+        // Test if exception is correctly thrown due to null input
+        boolean thrown = false;
+        try {
+            transferManager.resumeUpload(persistableUpload, progressListenerForTest);
+        } catch (IllegalArgumentException e){
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
+
+    /**
+     * Unit test to validate the behavior of the resume upload API with the normal inputs.
+     * This test is to check if the progress listener passed from the resume upload API will
+     * be chained in the progress listener list in the doUpload API.
+     *
+     */
+    @Test
+    public void testListenerInResumeUpload() {
+        // Mock a client that call service from aws s3
+        AmazonS3Client s3Client = Mockito.mock(AmazonS3Client.class);
+        // Mock a file
+        File myFile = Mockito.mock(File.class);
+        PersistableUpload persistableUpload = new PersistableUpload("bucketName", "key", "myFile",
+                "multipartUploadId", 10, 1000);
+        // Mock a progress listener that we set as an input to the new API
+        ProgressListener progressListenerForTest = Mockito.mock(ProgressListener.class);
+        TransferManager transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
+        // Actually run the new resume upload API
+        UploadImpl actualResult = (UploadImpl) transferManager.resumeUpload(persistableUpload, progressListenerForTest);
+
+        // Make assertion for the tests
+        assertNotNull(transferManager.getPutObjectRequestProgressListener());
+        assertTrue(actualResult.getProgressListenerChain().getListeners().contains(progressListenerForTest));
+        assertNotNull(actualResult.getProgressListenerChain());
+    }
 
     @Test
     public void testUploadFileList(){
